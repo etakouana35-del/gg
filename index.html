@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Ets GOOD DAV NET — Conjugueur complet</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  body{font-family:Inter, system-ui, Arial, sans-serif; background:linear-gradient(180deg,#edf7ff,#e3f2fd); margin:0; padding:20px; display:flex; flex-direction:column; align-items:center;}
+  header{width:100%; text-align:center; background:#0d47a1; color:#fff; padding:18px 10px; border-radius:8px; box-shadow:0 6px 18px rgba(13,71,161,.12); font-size:1.4rem; font-weight:700;}
+  .panel{width:100%; max-width:980px; background:#fff; margin-top:18px; padding:18px; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.06);}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  input[type="text"]{
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #1976d2;
+  border-radius: 50px; /* rond */
+  font-size: 1rem;
+  outline: none;
+  background: #f5fbff;
+  color: #0d47a1;
+  box-shadow: 0 4px 12px rgba(25,118,210,0.15);
+  transition: all 0.3s ease;
+}
+
+/* effet focus flottant */
+input[type="text"]:focus{
+  border-color: #0d47a1;
+  box-shadow: 0 6px 18px rgba(13,71,161,0.35);
+  transform: translateY(-2px);
+  background: #ffffff;
+}
+  button{background:#1976d2;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+  button.secondary{background:#4caf50}
+  h2{color:#0d47a1; margin:8px 0 12px}
+  h3{color:#1565c0; margin:12px 0 6px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  ul{padding-left:14px; margin:6px 0}
+  .meta{font-size:0.9rem;color:#555;margin-top:8px}
+  select{padding:8px;border-radius:8px;border:1px solid #cfe8ff}
+  .notice{background:#fffbe6;padding:8px;border-left:4px solid #ffd54f;border-radius:6px;margin:10px 0}
+  @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  #result{
+  margin-top:14px;
+  background:#e8f5e9; /* vert très clair */
+  padding:15px;
+  border-radius:10px;
+  border:1px solid #a5d6a7;
+  color:#1b5e20;
+}
+
+#result h2,
+#result h3,
+#result h4{
+  color:#0d47a1; /* bleu foncé */
+}
+
+#result ul{
+  background:#f1f8e9;
+  padding:10px 15px;
+  border-radius:8px;
+}
+
+#result li{
+  color:#1b5e20;
+}
+.meta {
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* nouveau style joli pour le texte */
+.meta-orange {
+  background: #ffe0b2;   /* orange clair */
+  padding: 10px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.term {
+  color: #e65100; /* orange */
+  font-weight: 600;
+}
+
+.verbe {
+  color: #000000; /* noir */
+}
+</style>
+</head>
+<body>
+  <header>Ets GOOD DAV NET — Conjugueur (complet)</header>
+
+  <div class="panel">
+    <div class="row">
+      <input id="verbeInput" placeholder="Entrez un verbe (ex: parler / finir / prendre / être)" />
+      <select id="modeSelection">
+        <option value="auto">Afficher tout (auto)</option>
+        <option value="indicatif">Indicatif</option>
+        <option value="conditionnel">Conditionnel</option>
+        <option value="subjonctif">Subjonctif</option>
+      </select>
+      <button onclick="conjuguer()">Conjuguer</button>
+      <button class="secondary" onclick="exemples()">Exemples</button>
+    </div>
+   <div class="meta meta-orange big-text">
+  Choisis/entre un verbe, puis clique <strong>Conjuguer</strong>. Le moteur utilise règles régulières pour 1er/2e groupes et une base intégrée pour beaucoup de 3e groupe.
+</div>>
+
+<div class="meta meta-orange">
+  Verbes autorisés : <span id="nbVerbes"></span>
+</div>
+    <div id="result" style="margin-top:14px"></div>
+   <div class="notice" style="color:#0d47a1;font-weight:bold;font-style:italic;text-align:center">
+  « Maîtriser un verbe, c’est maîtriser le temps. La conjugaison donne vie aux mots. »
+</div>
+  </div>
+
+<script>
+/* ---------- Données et utilitaires ---------- */
+/* ===== LISTE DES VERBES AUTORISÉS ===== */
+const verbesAutorises = {
+  "1er": [
+    "aimer","adorer","abandonner","abaisser","aborder","abriter","absorber","accentuer","accepter","accompagner",
+    "accorder","accuser","acheter","activer","adapter","additionner","admirer","adopter","adorer","adoucir",
+    "affaiblir","afficher","affirmer","agacer","agir","agrandir","aider","aimer","ajouter","alerter",
+    "aligner","alimenter","allumer","amener","amuser","animer","annoncer","apporter","appuyer","approcher",
+    "arranger","arriver","arroser","assurer","attaquer","attacher","attraper","augmenter","avancer","avertir",
+    "avouer","balayer","baisser","bannir","baptiser","barrer","bâtir","blesser","boiter","briller",
+    "brosser","brûler","calculer","casser","caresser","célébrer","changer","chanter","charger","chauffer",
+    "chercher","choisir","citer","classer","claquer","coller","combiner","commander","commencer","communiquer",
+    "comparer","compléter","composer","compter","concentrer","conclure","confirmer","confier","conjuguer","connecter",
+    "considérer","construire","continuer","contrôler","copier","corriger","couper","couvrir","créer","critiquer",
+    "croiser","cuisiner","danser","déclarer","décoller","décorer","découvrir","décrire","décrocher","défendre",
+    "déformer","dégager","déjeuner","demander","démontrer","dénoncer","dépêcher","déranger","descendre","désirer",
+    "dessiner","développer","déplacer","déposer","dérouler","détester","développer","diriger","discuter","distribuer",
+    "diviser","dominer","donner","douter","éclairer","écouter","écrire","effacer","élargir","élever",
+    "embellir","embrasser","emmener","employer","enchanter","encourager","endommager","enfermer","enlever","enseigner",
+    "entendre","entrer","envoyer","épeler","épouser","équilibrer","essayer","estimer","étudier","éviter",
+    "exagérer","examiner","excuser","exiger","expliquer","explorer","exprimer","fabriquer","faciliter","fermer",
+    "fêter","filmer","financer","finir","fixer","former","fortifier","fouiller","fournir","frapper",
+    "freiner","gagner","garantir","garder","gaspiller","glisser","goûter","grandir","gratter","grimper",
+    "guider","habiller","habiter","ignorer","imager","imaginer","imiter","importer","imposer","imprimer",
+    "inciter","indiquer","informer","installer","intégrer","intensifier","interdire","interroger","introduire","inviter",
+    "jouer","juger","lancer","laver","légender","libérer","lier","limiter","lire","loger",
+    "louer","lutter","magnifier","manger","manier","marcher","marier","marquer","mener","mesurer",
+    "montrer","motiver","multiplier","nager","nommer","noter","observer","obtenir","occuper","offrir",
+    "organiser","oublier","ouvrir","parler","partager","passer","payer","penser","percer","perfectionner",
+    "permettre","placer","planifier","pleurer","porter","poser","posséder","pousser","pratiquer","préciser",
+    "préparer","présenter","presser","prêter","proclamer","produire","proposer","protéger","publier","punir",
+    "questionner","quitter","raconter","ranger","rappeler","réagir","réaliser","rechercher","recommencer","réconcilier",
+    "réfléchir","refuser","regarder","régler","remercier","remplacer","remplir","rencontrer","rendre","renforcer",
+    "renouveler","rentrer","réparer","répéter","répondre","reporter","représenter","résister","résoudre","respecter",
+    "respirer","rester","retirer","retourner","réussir","réveiller","revenir","réviser","révolter","sauter",
+    "sauver","savoir","scanner","sécher","sélectionner","séparer","signer","situer","soigner","sonder",
+    "sortir","souffler","souhaiter","sourire","stabiliser","stocker","stimuler","structurer","suivre","supporter",
+    "supposer","surveiller","systématiser","taper","terminer","tester","tirer","tomber","toucher","tourner",
+    "tracer","traduire","travailler","trier","trouver","utiliser","valider","valoriser","vérifier","verser",
+    "vider","visiter","vivre","voler","voyager","zoomer"
+  ],
+
+  "2e": [
+    "finir","choisir","réussir","agir","réagir","grandir","maigrir","grossir","vieillir","rougir",
+    "blanchir","noircir","jaunir","verdir","pâlir","durcir","adoucir","affaiblir","agrandir","embellir",
+    "enlaidir","éclaircir","élargir","épaissir","étourdir","atterrir","bâtir","établir","investir","accomplir",
+    "abolir","assainir","avertir","fournir","nourrir","punir","obéir","unir","réunir","remplir","réfléchir",
+    "rétablir","réjouir","ralentir","compatir","chérir","fleurir","garnir","guérir","haïr",
+    "polir","ravir","salir","vomir","bénir","bondir","définir","mûrir","pourrir","rôtir","saisir","trahir"
+  ],
+
+  "3e": [
+    "aller","faire","dire","pouvoir","vouloir","savoir","devoir","venir","tenir","prendre","mettre",
+    "battre","suivre","vivre","voir","croire","boire","recevoir","apercevoir","concevoir","décevoir",
+    "percevoir","valoir","falloir","pleuvoir","courir","mourir","ouvrir","offrir","souffrir",
+    "apprendre","comprendre","surprendre","reprendre","descendre","monter","sortir","partir",
+    "dormir","sentir","servir","poursuivre","joindre","atteindre","écrire","conduire","produire",
+    "traduire","construire","détruire","résoudre","rendre","attendre","entendre","perdre",
+    "naître","croître","connaître","apparaître","disparaître","paraître"
+  ]
+};
+
+/* Fusion de tous les verbes */
+const listeVerbes = [
+  ...verbesAutorises["1er"],
+  ...verbesAutorises["2e"],
+  ...verbesAutorises["3e"]
+];
+
+/* Pronoms (six personnes) */
+const pronoms = ["je","tu","il/elle","nous","vous","ils/elles"];
+
+/* Conjugaisons des auxiliaires avoir et être (indicatif, imparfait, passé simple, futur)
+   Pour construits composés on utilisera formes appropriées. */
+const aux = {
+  "avoir": {
+    "Présent": ["j'ai","tu as","il a","nous avons","vous avez","ils ont"],
+    "Imparfait": ["j'avais","tu avais","il avait","nous avions","vous aviez","ils avaient"],
+    "Passé simple": ["j'eus","tu eus","il eut","nous eûmes","vous eûtes","ils eurent"],
+    "Futur simple": ["j'aurai","tu auras","il aura","nous aurons","vous aurez","ils auront"]
+  },
+  "être": {
+    "Présent": ["je suis","tu es","il est","nous sommes","vous êtes","ils sont"],
+    "Imparfait": ["j'étais","tu étais","il était","nous étions","vous étiez","ils étaient"],
+    "Passé simple": ["je fus","tu fus","il fut","nous fûmes","vous fûtes","ils furent"],
+    "Futur simple": ["je serai","tu seras","il sera","nous serons","vous serez","ils seront"]
+  }
+};
+
+/* Liste de verbes irréguliers (exhaustive ? non — mais courants inclus).
+   Chaque verbe contient : groupe (3), et objets pour indicatif/conditionnel/subjonctif/pastParticiple/auxiliaire */
+const irreguliers = {
+  "être": {
+    groupe: 3,
+    participe: "été",
+    aux: "avoir",
+    indicatif: {
+      "Présent":["je suis","tu es","il est","nous sommes","vous êtes","ils sont"],
+      "Imparfait":["j'étais","tu étais","il était","nous étions","vous étiez","ils étaient"],
+      "Passé simple":["je fus","tu fus","il fut","nous fûmes","vous fûtes","ils furent"],
+      "Futur simple":["je serai","tu seras","il sera","nous serons","vous serez","ils seront"]
+    },
+    conditionnel: {
+      "Présent":["je serais","tu serais","il serait","nous serions","vous seriez","ils seraient"]
+    },
+    subjonctif: {
+      "Présent":["que je sois","que tu sois","qu'il soit","que nous soyons","que vous soyez","qu'ils soient"]
+    }
+  },
+  "avoir": {
+    groupe: 3,
+    participe: "eu",
+    aux: "avoir",
+    indicatif: {
+      "Présent":["j'ai","tu as","il a","nous avons","vous avez","ils ont"],
+      "Imparfait":["j'avais","tu avais","il avait","nous avions","vous aviez","ils avaient"],
+      "Passé simple":["j'eus","tu eus","il eut","nous eûmes","vous eûtes","ils eurent"],
+      "Futur simple":["j'aurai","tu auras","il aura","nous aurons","vous aurez","ils auront"]
+    },
+    conditionnel: {
+      "Présent":["j'aurais","tu aurais","il aurait","nous aurions","vous auriez","ils auraient"]
+    },
+    subjonctif: {
+      "Présent":["que j'aie","que tu aies","qu'il ait","que nous ayons","que vous ayez","qu'ils aient"]
+    }
+  },
+  "faire": {
+    groupe: 3,
+    participe: "fait",
+    aux: "avoir",
+    indicatif: {
+      "Présent":["je fais","tu fais","il fait","nous faisons","vous faites","ils font"],
+      "Imparfait":["je faisais","tu faisais","il faisait","nous faisions","vous faisiez","ils faisaient"],
+      "Passé simple":["je fis","tu fis","il fit","nous fîmes","vous fîtes","ils firent"],
+      "Futur simple":["je ferai","tu feras","il fera","nous ferons","vous ferez","ils feront"]
+    },
+    conditionnel: {
+      "Présent":["je ferais","tu ferais","il ferait","nous ferions","vous feriez","ils feraient"]
+    },
+    subjonctif: {
+      "Présent":["que je fasse","que tu fasses","qu'il fasse","que nous fassions","que vous fassiez","qu'ils fassent"]
+    }
+  },
+  "aller": {
+    groupe: 3, participe:"allé", aux:"être",
+    indicatif:{
+      "Présent":["je vais","tu vas","il va","nous allons","vous allez","ils vont"],
+      "Imparfait":["j'allais","tu allais","il allait","nous allions","vous alliez","ils allaient"],
+      "Passé simple":["j'allai","tu allas","il alla","nous allâmes","vous allâtes","ils allèrent"],
+      "Futur simple":["j'irai","tu iras","il ira","nous irons","vous irez","ils iront"]
+    },
+    conditionnel:{"Présent":["j'irais","tu irais","il irait","nous irions","vous iriez","ils iraient"]},
+    subjonctif:{"Présent":["que j'aille","que tu ailles","qu'il aille","que nous allions","que vous alliez","qu'ils aillent"]}
+  },
+  "venir": {
+    groupe:3, participe:"venu", aux:"être",
+    indicatif:{
+      "Présent":["je viens","tu viens","il vient","nous venons","vous venez","ils viennent"],
+      "Imparfait":["je venais","tu venais","il venait","nous venions","vous veniez","ils venaient"],
+      "Passé simple":["je vins","tu vins","il vint","nous vînmes","vous vîntes","ils vinrent"],
+      "Futur simple":["je viendrai","tu viendras","il viendra","nous viendrons","vous viendrez","ils viendront"]
+    },
+    conditionnel:{"Présent":["je viendrais","tu viendrais","il viendrait","nous viendrions","vous viendriez","ils viendraient"]},
+    subjonctif:{"Présent":["que je vienne","que tu viennes","qu'il vienne","que nous venions","que vous veniez","qu'ils viennent"]}
+  },
+  "prendre": {
+    groupe:3, participe:"pris", aux:"avoir",
+    indicatif:{
+      "Présent":["je prends","tu prends","il prend","nous prenons","vous prenez","ils prennent"],
+      "Imparfait":["je prenais","tu prenais","il prenait","nous prenions","vous preniez","ils prenaient"],
+      "Passé simple":["je pris","tu pris","il prit","nous prîmes","vous prîtes","ils mirent"],
+      "Futur simple":["je prendrai","tu prendras","il prendra","nous prendrons","vous prendrez","ils prendront"]
+    },
+    conditionnel:{"Présent":["je prendrais","tu prendrais","il prendrait","nous prendrions","vous prendriez","ils prendraient"]},
+    subjonctif:{"Présent":["que je prenne","que tu prennes","qu'il prenne","que nous prenions","que vous preniez","qu'ils prennent"]}
+  },
+  "dire": {
+    groupe:3, participe:"dit", aux:"avoir",
+    indicatif:{
+      "Présent":["je dis","tu dis","il dit","nous disons","vous dites","ils disent"],
+      "Imparfait":["je disais","tu disais","il disait","nous disions","vous disiez","ils disaient"],
+      "Passé simple":["je dis","tu dis","il dit","nous dîmes","vous dîtes","ils dirent"],
+      "Futur simple":["je dirai","tu diras","il dira","nous dirons","vous direz","ils diront"]
+    },
+    conditionnel:{"Présent":["je dirais","tu dirais","il dirait","nous dirions","vous diriez","ils diraient"]},
+    subjonctif:{"Présent":["que je dise","que tu dises","qu'il dise","que nous disions","que vous disiez","qu'ils disent"]}
+  },
+  "voir": {
+    groupe:3, participe:"vu", aux:"avoir",
+    indicatif:{
+      "Présent":["je vois","tu vois","il voit","nous voyons","vous voyez","ils voient"],
+      "Imparfait":["je voyais","tu voyais","il voyait","nous voyions","vous voyiez","ils voyaient"],
+      "Passé simple":["je vis","tu vis","il vit","nous vîmes","vous vîtes","ils virent"],
+      "Futur simple":["je verrai","tu verras","il verra","nous verrons","vous verrez","ils verront"]
+    },
+    conditionnel:{"Présent":["je verrais","tu verrais","il verrait","nous verrions","vous verriez","ils verraient"]},
+    subjonctif:{"Présent":["que je voie","que tu voies","qu'il voie","que nous voyions","que vous voyiez","qu'ils voient"]}
+  },
+  "pouvoir":{groupe:3, participe:"pu", aux:"avoir",
+    indicatif:{
+      "Présent":["je peux","tu peux","il peut","nous pouvons","vous pouvez","ils peuvent"],
+      "Imparfait":["je pouvais","tu pouvais","il pouvait","nous pouvions","vous pouviez","ils pouvaient"],
+      "Passé simple":["je pus","tu pus","il put","nous pûmes","vous pûtes","ils purent"],
+      "Futur simple":["je pourrai","tu pourras","il pourra","nous pourrons","vous pourrez","ils pourront"]
+    },
+    conditionnel:{"Présent":["je pourrais","tu pourrais","il pourrait","nous pourrions","vous pourriez","ils pourraient"]},
+    subjonctif:{"Présent":["que je puisse","que tu puisses","qu'il puisse","que nous puissions","que vous puissiez","qu'ils puissent"]}
+  },
+  "vouloir":{groupe:3, participe:"voulu", aux:"avoir",
+    indicatif:{
+      "Présent":["je veux","tu veux","il veut","nous voulons","vous voulez","ils veulent"],
+      "Imparfait":["je voulais","tu voulais","il voulait","nous voulions","vous vouliez","ils voulaient"],
+      "Passé simple":["je voulus","tu voulus","il voulut","nous voulûmes","vous voulûtes","ils voulurent"],
+      "Futur simple":["je voudrai","tu voudras","il voudra","nous voudrons","vous voudrez","ils voudront"]
+    },
+    conditionnel:{"Présent":["je voudrais","tu voudrais","il voudrait","nous voudrions","vous voudriez","ils voudraient"]},
+    subjonctif:{"Présent":["que je veuille","que tu veuilles","qu'il veuille","que nous voulions","que vous vouliez","qu'ils veuillent"]}
+  },
+  "savoir":{groupe:3, participe:"su", aux:"avoir",
+    indicatif:{
+      "Présent":["je sais","tu sais","il sait","nous savons","vous savez","ils savent"],
+      "Imparfait":["je savais","tu savais","il savait","nous savions","vous saviez","ils savaient"],
+      "Passé simple":["je sus","tu sus","il sut","nous sûmes","vous sûtes","ils surent"],
+      "Futur simple":["je saurai","tu sauras","il saura","nous saurons","vous saurez","ils sauront"]
+    },
+    conditionnel:{"Présent":["je saurais","tu saurais","il saurait","nous saurions","vous sauriez","ils sauraient"]},
+    subjonctif:{"Présent":["que je sache","que tu saches","qu'il sache","que nous sachions","que vous sachiez","qu'ils sachent"]}
+  },
+  "tenir":{groupe:3, participe:"tenu", aux:"avoir",
+    indicatif:{
+      "Présent":["je tiens","tu tiens","il tient","nous tenons","vous tenez","ils tiennent"],
+      "Imparfait":["je tenais","tu tenais","il tenait","nous tenions","vous teniez","ils tenaient"],
+      "Passé simple":["je tins","tu tins","il tint","nous tînmes","vous tîntes","ils tinrent"],
+      "Futur simple":["je tiendrai","tu tiendras","il tiendra","nous tiendrons","vous tiendrez","ils tiendront"]
+    },
+    conditionnel:{"Présent":["je tiendrais","tu tiendrais","il tiendrait","nous tiendrions","vous tiendrez","ils tiendraient"]},
+    subjonctif:{"Présent":["que je tienne","que tu tiennes","qu'il tienne","que nous tenions","que vous teniez","qu'ils tiennent"]}
+  },
+  "mettre":{groupe:3, participe:"mis", aux:"avoir",
+    indicatif:{
+      "Présent":["je mets","tu mets","il met","nous mettons","vous mettez","ils mettent"],
+      "Imparfait":["je mettais","tu mettais","il mettait","nous mettions","vous mettiez","ils mettaient"],
+      "Passé simple":["je mis","tu mis","il mit","nous mîmes","vous mîtes","ils mirent"],
+      "Futur simple":["je mettrai","tu mettras","il mettra","nous mettrons","vous mettrez","ils mettront"]
+    },
+    conditionnel:{"Présent":["je mettrais","tu mettrais","il mettrait","nous mettrions","vous mettriez","ils mettraient"]},
+    subjonctif:{"Présent":["que je mette","que tu mettes","qu'il mette","que nous mettions","que vous mettiez","qu'ils mettent"]}
+  },
+  "lire":{groupe:3, participe:"lu", aux:"avoir",
+    indicatif:{
+      "Présent":["je lis","tu lis","il lit","nous lisons","vous lisez","ils lisent"],
+      "Imparfait":["je lisais","tu lisais","il lisait","nous lisions","vous lisiez","ils lisaient"],
+      "Passé simple":["je lus","tu lus","il lut","nous lûmes","vous lûtes","ils lurent"],
+      "Futur simple":["je lirai","tu liras","il lira","nous lirons","vous lirez","ils liront"]
+    },
+    conditionnel:{"Présent":["je lirais","tu lirais","il lirait","nous lirions","vous liriez","ils liraient"]},
+    subjonctif:{"Présent":["que je lise","que tu lises","qu'il lise","que nous lisions","que vous lisiez","qu'ils lisent"]}
+  },
+  "boire":{groupe:3, participe:"bu", aux:"avoir",
+    indicatif:{
+      "Présent":["je bois","tu bois","il boit","nous buvons","vous buvez","ils boivent"],
+      "Imparfait":["je buvais","tu buvais","il buvait","nous buvions","vous buviez","ils buvaient"],
+      "Passé simple":["je bus","tu bus","il but","nous bûmes","vous bûtes","ils burent"],
+      "Futur simple":["je boirai","tu boiras","il boira","nous boirons","vous boirez","ils boiront"]
+    },
+    conditionnel:{"Présent":["je boirais","tu boirais","il boirait","nous boirions","vous boiriez","ils boiraient"]},
+    subjonctif:{"Présent":["que je boive","que tu boives","qu'il boive","que nous buvions","que vous buviez","qu'ils boivent"]}
+  },
+  "croire":{groupe:3, participe:"cru", aux:"avoir",
+    indicatif:{
+      "Présent":["je crois","tu crois","il croit","nous croyons","vous croyez","ils croient"],
+      "Imparfait":["je croyais","tu croyais","il croyait","nous croyions","vous croyiez","ils croyaient"],
+      "Passé simple":["je crus","tu crus","il crut","nous crûmes","vous crûtes","ils crurent"],
+      "Futur simple":["je croirai","tu croiras","il croira","nous croirons","vous croirez","ils croiront"]
+    },
+    conditionnel:{"Présent":["je croirais","tu croirais","il croirait","nous croirions","vous croiriez","ils croiraient"]},
+    subjonctif:{"Présent":["que je croie","que tu croies","qu'il croie","que nous croyions","que vous croyiez","qu'ils croient"]}
+  }
+};
+
+/* Retourne true si verbe est dans la liste d'irreguliers */
+function estIrregulier(v){
+  return irreguliers.hasOwnProperty(v);
+}
+
+/* Détection de groupe simple (approximation correcte pour la plupart) */
+function detecteGroupe(verbe){
+  if(verbe === "aller") return 3;
+  if(verbe.endsWith("er")) return 1;
+  if(verbe.endsWith("ir") && !verbe.endsWith("oir")) {
+    // attention : certains -ir sont 3e groupe; nous garderons comme 2e sauf s'il est dans irreguliers
+    return 2;
+  }
+  return 3;
+}
+
+/* Conjugaison régulière 1er groupe (terminaisons) */
+const term1 = {
+  "Présent":["e","es","e","ons","ez","ent"],
+  "Imparfait":["ais","ais","ait","ions","iez","aient"],
+  "Passé simple":["ai","as","a","âmes","âtes","èrent"], // approximatif (parler -> parlai, parlas, parla, parlâmes...)
+  "Futur simple":["erai","eras","era","erons","erez","eront"]
+};
+
+/* Conjugaison régulière 2e groupe (-ir -> -iss- pour présent/imparfait etc) */
+const term2 = {
+  "Présent":["is","is","it","issons","issez","issent"],
+  "Imparfait":["issais","issais","issait","issions","issiez","issaient"],
+  "Passé simple":["is","is","it","îmes","îtes","irent"],
+  "Futur simple":["irai","iras","ira","irons","irez","iront"]
+};
+
+/* Construire participe passé régulier */
+function participePasseRegulier(verbe, groupe){
+  if(groupe === 1) return verbe.slice(0,-2) + "é"; // parler -> parlé
+  if(groupe === 2) return verbe.slice(0,-2) + "i"; // finir -> fini
+  // 3e groupe par défaut approximatif: remove -re/-ir -> u
+  if(verbe.endsWith("re")) return verbe.slice(0,-2) + "u";
+  if(verbe.endsWith("oir")) return verbe.slice(0,-3) + "u";
+  if(verbe.endsWith("ir")) return verbe.slice(0,-2) + "i";
+  return verbe + "é";
+}
+
+/* Construire conjugaisons régulières (indicatif simple) */
+function conjugaisonsRegulier(verbe, groupe){
+  const rad = (groupe===1 || groupe===2) ? verbe.slice(0,-2) : verbe.slice(0,-2);
+  let res = {};
+  if(groupe===1){
+    for(let temps in term1){
+      res[temps] = term1[temps].map((suf, i) => {
+        let forme = pronoms[i] + " " + (i===0 && startsWithVowelOrH(rad+"e") ? apostrophe(pronoms[i]) : "");
+        // manage elision "je" -> "j'"
+        const base = (temps==="Futur simple" || temps==="Passé simple") && ["ai","as","a","âmes","âtes","èrent"].includes(suf) ? rad + suf.replace(/^e/,'e') : rad + (suf);
+        // For present: add e/es/e...
+        return cleanEspaces((i===0 && startsWithVowelOrH(rad + (suf.startsWith("e")? "e":""))? apostrophe(pronoms[i]) : pronoms[i]) + " " + rad + suf);
+      });
+    }
+  } else if(groupe===2){
+    for(let temps in term2){
+      res[temps] = term2[temps].map((suf,i)=> cleanEspaces((i===0 && startsWithVowelOrH(rad+"i")? apostrophe(pronoms[i]) : pronoms[i]) + " " + rad + suf));
+    }
+  } else {
+    // 3e groupe régulier approximatif: fallback to participe + present uses -s/-s/-t etc — we'll produce simple fallback
+    res["Présent"] = ["je " + verbe, "tu " + verbe, "il " + verbe, "nous " + verbe, "vous " + verbe, "ils " + verbe];
+    res["Imparfait"] = pronoms.map((p,i)=> p + " " + verbe + "ais");
+    res["Passé simple"] = pronoms.map((p,i)=> p + " " + verbe + "u");
+    res["Futur simple"] = pronoms.map((p,i)=> p + " " + verbe + "ra");
+  }
+  return res;
+}
+
+/* Helpers */
+function apostrophe(pron){ return "j'"; }
+function startsWithVowelOrH(str){ return /^[aeiouhàâäéèêëîïôöùûüy]/i.test(str); }
+function cleanEspaces(s){ return s.replace(/\s+/g,' ').replace("je je","je").trim(); }
+function coloriseConjugaison(texte){
+  const parts = texte.split(" ");
+  if(parts.length < 2) return texte;
+
+  const sujet = parts[0];       // je, tu, il...
+  const mot = parts.slice(1).join(" ");
+
+  // on essaie de séparer verbe + terminaison (approx simple)
+  const match = mot.match(/(.+?)(e|es|e|ons|ez|ent|is|it|issons|issez|issent|ai|as|a|ons|ez|ont|ais|ait|ions|iez|aient|rai|ras|ra|rons|rez|ront)$/);
+
+  if(!match){
+    return `<span class="verbe">${sujet} ${mot}</span>`;
+  }
+
+  const base = match[1];
+  const term = match[2];
+
+  return `${sujet} <span class="verbe">${base}</span><span class="term">${term}</span>`;
+}
+
+/* Construire temps composés à partir d'un auxiliaire et du participe (aux conjugué à temps simple) */
+function compose(tempsAux, tenseAuxForms, participe){
+  // tenseAuxForms : tableau 6 formes de l'auxiliaire (ex: aux['avoir']['Présent'])
+  return tenseAuxForms.map((auxForm, i) => {
+    // si auxiliaire est "j'ai", ça contient déjà pronom; on ajoute le participe
+    return auxForm + " " + participe;
+  });
+}
+
+/* Construire plus-que-parfait / passé antérieur / futur antérieur selon auxiliaire */
+function construitCompose(verbeData, verbe, tempsComposeName){
+  // tempsComposeName est une des : Passé composé, Plus-que-parfait, Passé antérieur, Futur antérieur
+  // Map temps composé -> auxiliaire tense to use
+  // Passé composé : auxiliaire au présent
+  // Plus-que-parfait : auxiliaire à l'imparfait
+  // Passé antérieur : auxiliaire au passé simple
+  // Futur antérieur : auxiliaire au futur simple
+  const mapTemps = {
+    "Passé composé": ["Présent","Passé composé"],
+    "Plus-que-parfait": ["Imparfait","Plus-que-parfait"],
+    "Passé antérieur": ["Passé simple","Passé antérieur"],
+    "Futur antérieur": ["Futur simple","Futur antérieur"]
+  };
+  const mapping = mapTemps[tempsComposeName];
+  if(!mapping) return pronoms.map((p)=> p + " " + verbe + " (N/A)");
+  const tenseForAux = mapping[0]; // e.g. "Présent"
+  const auxName = (verbeData && verbeData.aux) ? verbeData.aux : "avoir";
+  const auxForms = aux[auxName] && aux[auxName][tenseForAux] ? aux[auxName][tenseForAux] : aux["avoir"][tenseForAux];
+  const participe = verbeData && verbeData.participe ? verbeData.participe : participePasseRegulier(verbe, detecteGroupe(verbe));
+  return compose(auxName, auxForms, participe);
+}
+
+/* Construire les temps composés listés (on fournit Passé composé, Plus-que-parfait, Passé antérieur, Futur antérieur) */
+function tousTempsComposes(verbeData, verbe){
+  return {
+    "Passé composé": construitCompose(verbeData,verbe,"Passé composé"),
+    "Plus-que-parfait": construitCompose(verbeData,verbe,"Plus-que-parfait"),
+    "Passé antérieur": construitCompose(verbeData,verbe,"Passé antérieur"),
+    "Futur antérieur": construitCompose(verbeData,verbe,"Futur antérieur")
+  };
+}
+
+/* Construire conditionnel présent réguliers (pour 1er et 2e groupe on base sur futur radical + terminaisons de conditionnel) */
+const condTerm = ["ais","ais","ait","ions","iez","aient"];
+function conditionnelPresentRegulier(verbe, groupe){
+  let radicalFutur;
+  if(groupe===1) radicalFutur = verbe; // parler -> parler-
+  else if(groupe===2) radicalFutur = verbe; // finir -> finir-
+  else radicalFutur = verbe; // fallback
+  return pronoms.map((p,i)=> cleanEspaces((i===0 && startsWithVowelOrH(radicalFutur)? apostrophe(p) : p) + " " + radicalFutur + condTerm[i]));
+}
+
+/* Conditionnel passé = auxiliaire au conditionnel présent + participe */
+function conditionnelPasse(verbeData, verbe){
+  const auxName = verbeData && verbeData.aux ? verbeData.aux : "avoir";
+  // construire conditionnel présent de l'auxiliaire (en utilisant nos données limitées)
+  const condAux = auxName==="être" ? [
+    "je serais","tu serais","il serait","nous serions","vous seriez","ils seraient"
+  ] : [
+    "j'aurais","tu aurais","il aurait","nous aurions","vous auriez","ils auraient"
+  ];
+  const participe = verbeData && verbeData.participe ? verbeData.participe : participePasseRegulier(verbe, detecteGroupe(verbe));
+  return condAux.map((a)=> a + " " + participe);
+}
+
+/* Subjonctif présent régulier (approx) -> pour 1er et 2e groupe */
+function subjonctifPresentRegulier(verbe, groupe){
+  const rad = (groupe===1 || groupe===2) ? verbe.slice(0,-2) : verbe.slice(0,-2);
+  // terminaisons usuelles du subjonctif présent : e,es,e,ions,iez,ent
+  const s = ["e","es","e","ions","iez","ent"];
+  return s.map((suf,i)=> cleanEspaces((i===0 && startsWithVowelOrH(rad+suf)? apostrophe(pronoms[i]) : pronoms[i]) + " " + rad + suf));
+}
+
+/* Subjonctif passé = subjonctif présent de l'auxiliaire + participe */
+function subjonctifPasse(verbeData, verbe){
+  // subjonctif présent auxiliaire forms minimal
+  const auxName = verbeData && verbeData.aux ? verbeData.aux : "avoir";
+  const subAux = auxName==="être" ? ["que je sois","que tu sois","qu'il soit","que nous soyons","que vous soyez","qu'ils soient"]
+                                  : ["que j'aie","que tu aies","qu'il ait","que nous ayons","que vous ayez","qu'ils aient"];
+  const participe = verbeData && verbeData.participe ? verbeData.participe : participePasseRegulier(verbe, detecteGroupe(verbe));
+  return subAux.map(a => a + " " + participe);
+}
+
+/* ---------- Générateur principal ---------- */
+
+function conjuguer(){
+  const raw = document.getElementById("verbeInput").value.trim().toLowerCase();
+
+  if(!raw){
+    document.getElementById("result").innerHTML = "<p>Veuillez entrer un verbe.</p>";
+    return;
+  }
+
+  const modeReq = document.getElementById("modeSelection").value;
+
+  /* Normalisation (IMPORTANT 🔥) */
+  const verbe = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // enlève accents
+
+  /* ===== FILTRAGE STRICT ===== */
+  if(!listeVerbes.includes(verbe)){
+    document.getElementById("result").innerHTML =
+      `<p style="color:red;font-weight:bold">❌ Verbe non autorisé !</p>
+       <p>Cette plateforme ne conjugue que les verbes définis par l’administrateur.</p>`;
+    return;
+  }
+
+  const groupe = estIrregulier(verbe)
+    ? irreguliers[verbe].groupe
+    : detecteGroupe(verbe);
+
+  let html = `<h2>Verbe : <strong>${verbe}</strong> — ${groupe}ᵉ groupe ${estIrregulier(verbe) ? "(irrégulier connu)" : ""}</h2>`;
+
+  /* Construire indicatif (simples) */
+  if(modeReq==="auto" || modeReq==="indicatif"){
+    html += `<h3>Mode : Indicatif — Temps simples</h3>`;
+    // Simples : Présent, Imparfait, Passé simple, Futur simple
+    let simples = {};
+    if(estIrregulier(verbe)){
+      simples = irreguliers[verbe].indicatif;
+    } else {
+      simples = conjugaisonsRegulier(verbe,groupe);
+    }
+    ["Présent","Imparfait","Passé simple","Futur simple"].forEach(t=>{
+      if(simples[t]){
+        html += `<h4>${t}</h4><ul>` + simples[t].map(f => `<li>${coloriseConjugaison(f)}</li>`).join("") + `</ul>`;
+      }
+    });
+
+    /* Composés de l'indicatif */
+    html += `<h3>Mode : Indicatif — Temps composés</h3>`;
+    const compos = tousTempsComposes(estIrregulier(verbe)? irreguliers[verbe] : null, verbe);
+    ["Passé composé","Plus-que-parfait","Passé antérieur","Futur antérieur"].forEach(t=>{
+      html += `<h4>${t}</h4><ul>` + compos[t].map(f => `<li>${f}</li>`).join("") + `</ul>`;
+    });
+  }
+
+  /* Conditionnel */
+  if(modeReq==="auto" || modeReq==="conditionnel"){
+    html += `<h3>Mode : Conditionnel</h3>`;
+    if(estIrregulier(verbe)){
+      // présent conditionnel depuis la base si disponible
+      const pres = irreguliers[verbe].conditionnel && irreguliers[verbe].conditionnel["Présent"] ? irreguliers[verbe].conditionnel["Présent"] : conditionnelPresentRegulier(verbe,groupe);
+      html += `<h4>Présent</h4><ul>` + pres.map(f => `<li>${f}</li>`).join("") + `</ul>`;
+      // passé
+      html += `<h4>Passé</h4><ul>` + conditionnelPasse(irreguliers[verbe],verbe).map(f=>`<li>${f}</li>`).join("") + `</ul>`;
+    } else {
+      html += `<h4>Présent</h4><ul>` + conditionnelPresentRegulier(verbe,groupe).map(f=>`<li>${f}</li>`).join("") + `</ul>`;
+      html += `<h4>Passé</h4><ul>` + conditionnelPasse(null,verbe).map(f=>`<li>${f}</li>`).join("") + `</ul>`;
+    }
+  }
+
+  /* Subjonctif */
+  if(modeReq==="auto" || modeReq==="subjonctif"){
+    html += `<h3>Mode : Subjonctif</h3>`;
+    if(estIrregulier(verbe)){
+      const pres = irreguliers[verbe].subjonctif && irreguliers[verbe].subjonctif["Présent"] ? irreguliers[verbe].subjonctif["Présent"] : subjonctifPresentRegulier(verbe,groupe);
+      html += `<h4>Présent</h4><ul>` + pres.map(f=>`<li>${f}</li>`).join("") + `</ul>`;
+      html += `<h4>Passé</h4><ul>` + subjonctifPasse(irreguliers[verbe],verbe).map(f=>`<li>${f}</li>`).join("") + `</ul>`;
+    } else {
+      html += `<h4>Présent</h4><ul>` + subjonctifPresentRegulier(verbe,groupe).map(f=>`<li>${f}</li>`).join("") + `</ul>`;
+      html += `<h4>Passé</h4><ul>` + subjonctifPasse(null,verbe).map(f=>`<li>${f}</li>`).join("") + `</ul>`;
+    }
+  }
+
+  document.getElementById("result").innerHTML = html;
+}
+
+/* Exemple rapide pour tester */
+function exemples(){
+  const liste = ["parler","finir","prendre","être","avoir","aller","venir","faire","voir","pouvoir","vouloir","savoir","mettre","lire","boire"];
+  document.getElementById("verbeInput").value = liste[Math.floor(Math.random()*liste.length)];
+  conjuguer();
+}
+
+/* Initial focus */
+document.getElementById("verbeInput").addEventListener("keydown", function(e){
+  if(e.key === "Enter") conjuguer();
+});
+</script>
+<script>
+/* ===== OmniAI Chat Widget ===== */
+(function() {
+  if (document.getElementById('omni-chat-widget')) return;
+  var widget = document.createElement('div');
+  widget.id = 'omni-chat-widget';
+  widget.innerHTML = `
+    <div id="omni-bubble" onclick="document.getElementById('omni-panel').style.display=document.getElementById('omni-panel').style.display==='none'?'flex':'none'" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 24px rgba(79,70,229,0.4);z-index:9999;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+      <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+    </div>
+    <div id="omni-panel" style="display:none;position:fixed;bottom:96px;right:24px;width:360px;height:480px;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.18);z-index:9999;flex-direction:column;overflow:hidden;font-family:Inter,sans-serif">
+      <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:16px;color:white;display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+        </div>
+        <div><div style="font-weight:600;font-size:14px">OmniAI Assistant</div><div style="font-size:11px;opacity:0.8">● En ligne</div></div>
+      </div>
+      <div id="omni-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="background:#f1f5f9;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:#374151;max-width:85%">Bonjour ! Comment puis-je vous aider aujourd'hui ? 👋</div>
+      </div>
+      <div style="padding:12px;border-top:1px solid #e5e7eb;display:flex;gap:8px">
+        <input id="omni-input" type="text" placeholder="Posez votre question..." style="flex:1;border:1px solid #e5e7eb;border-radius:24px;padding:8px 16px;font-size:13px;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')window.omniSend()"/>
+        <button onclick="window.omniSend()" style="width:36px;height:36px;border-radius:50%;background:#4f46e5;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(widget);
+  window.omniSend = async function() {
+    var input = document.getElementById('omni-input');
+    var msg = input.value.trim();
+    if (!msg) return;
+    var messages = document.getElementById('omni-messages');
+    messages.innerHTML += '<div style="background:#4f46e5;color:white;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:13px;max-width:85%;align-self:flex-end;margin-left:auto">' + msg + '</div>';
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+    messages.innerHTML += '<div id="omni-typing" style="background:#f1f5f9;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:#9ca3af;max-width:85%">En train d\'écrire...</div>';
+    try {
+      var res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer YOUR_API_KEY'},
+        body: JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:'You are a helpful assistant integrated in a web application.'},{role:'user',content:msg}]})
+      });
+      var data = await res.json();
+      var reply = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu répondre.';
+      document.getElementById('omni-typing')?.remove();
+      messages.innerHTML += '<div style="background:#f1f5f9;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:#374151;max-width:85%">' + reply + '</div>';
+    } catch(e) {
+      document.getElementById('omni-typing')?.remove();
+      messages.innerHTML += '<div style="background:#fee2e2;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:#dc2626;max-width:85%">Erreur de connexion.</div>';
+    }
+    messages.scrollTop = messages.scrollHeight;
+  };
+})();
+</script>
+</body>
+</html>
